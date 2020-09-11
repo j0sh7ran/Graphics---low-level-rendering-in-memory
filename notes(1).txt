@@ -1,0 +1,140 @@
+#----------------------------------------------------------------------
+Programming Assignment 04 Clarifications
+
+#----------------------------------------------------------------------
+Allocating destination
+----------
+In main(), the destination array is used to receive the projected
+versions of the model's vertices.
+
+As such, there should be just as many Vertex structures in the
+destination array as there are in the model's m_vertex array, no
+more, no fewer.
+
+#----------------------------------------------------------------------
+"Calculating" the Camera Position
+----------
+When constructing a Vertex to represent the camera position in the
+main() routine, the TODO note says that in the case of a PARALLEL
+projection, the camera should be thought of as being "very far"
+away.
+
+You can use HUGE_VAL or INFINITY to represent "very far" in this
+case.  These macros come from <math.h>, which has been included
+for you in hmwk_04.c.
+
+By the way, having INFINITY as a coordinate should NOT have any
+deleterious effect on your calculations in the isVisible()
+routine.  (See the HelloVisible test mentioned in this update
+for more information.)
+
+#----------------------------------------------------------------------
+HelloVisible test
+----------
+
+To make it even easier to exercise your implementation of the
+isVisible() routine, I have written a standalone file
+HelloVisible.c.  This program exercises the isVisible() routine by
+itself, not requiring any other part of your solution.  (It uses
+vertex.c, but that's not part of "your" solution as it was given
+to you.)
+
+It uses only two triangles, one of which is visible and the other
+of which is not.  Further, this test uses a camera position with
+an infinite z coordinate, as one should when considering PARALLEL
+projections.
+
+While this is not a complete and exhaustive test of the
+isVisible() routine, it does exercise it in both a positive and a
+negative way.  Getting this exercise to work properly will move
+you a long way down the road to success.
+
+Here's how to compile and run HelloVisible.c,
+
+      $ gcc -o HelloVisible HelloVisible.c vertex.c visible.c
+      $ ./HelloVisible
+
+      #-------------------
+      cp (    0.00000000,    0.00000000,           inf )
+
+      #-------------------
+      vA (    1.00000000,    2.00000000,    0.00000000 )
+      vB (    3.00000000,    4.00000000,    0.00000000 )
+      vC (    5.00000000,    2.00000000,    0.00000000 )
+
+        --> This △ is NOT visible.
+
+      #-------------------
+      vA (    1.00000000,    2.00000000,    0.00000000 )
+      vC (    5.00000000,    2.00000000,    0.00000000 )
+      vB (    3.00000000,    4.00000000,    0.00000000 )
+
+        --> This △ IS visible.
+
+      #-------------------
+      $
+
+Notice in particular that the camera position, cp, has a z
+coordinate that is infinite and yet the calls to the isVisible()
+routine work properly.
+
+Notice also that the two triangle use the SAME vertices, just in
+opposite order.  This is a clear indicator of why it's necessary
+to consider a triangle's vertices in the proper order.  The
+visibility of the triangle is vitally dependent on the order of
+its vertices.
+
+Read the comments in the HelloVisible.c file for more information.
+
+#----------------------------------------------------------------------
+"Missing Lines"
+----------
+
+There has been some quesion about so-called "missing lines" in
+some of the Template/ files, the thought being that without some
+"#include" statements, it's impossible to write the required code.
+
+The answer here is No, there are no missing lines.  (At least not
+in the areas that have so far been mentioned.  :)
+
+----------
+In particular, triangle.c does NOT require an include of
+<stdlib.h>.  It's possible to write the dumpTriangle() routine
+using a Line structure without using calloc, malloc, etc.
+
+In fact, one should NOT use calloc, malloc, etc. in this routine
+as not only is their use not required, but it would also be very
+inefficient.
+
+----------
+Further, visible.c does NOT require an include of <math.h>.  It's
+possible to write the isVisible() routine without using acos(),
+asin(), pow(), etc.
+
+In fact, one can (and should!) write isVisible() using only the
+add, subtract, multiply, and relational operators.  One of the
+essential points of the Backface Culling method is that it is
+quite efficient.  It specifically does NOT require trigonometric
+functions, square roots, powers, etc.
+
+FYI:  Checking the reference solution, I see that the isVisible()
+routine uses 12 subtracts, 9 multiplies, 2 adds, 1 negate, and 1
+relation check.
+
+Your solution might not use exactly this mix of operators, but
+there are NO calls to any trigonometric, power, or root functions
+so no include of the <math.h> header is required.
+
+#----------------------------------------------------------------------
+TODO sections
+----------
+
+Remember that one should change code only at the spots marked as
+TODO.  Do NOT change anything aside from the TODO sections
+
+No additional headers, no changes to other spots or routines, no
+changes whatsoever outside the TODO spots.
+
+Any such changes will cost you points.
+
+#----------------------------------------------------------------------

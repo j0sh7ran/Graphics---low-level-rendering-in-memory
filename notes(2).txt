@@ -1,0 +1,206 @@
+#----------------------------------------------------------------------
+Programming Assignment 04 Clarifications 2
+
+#----------------------------------------------------------------------
+Debugging code
+----------
+
+Do not send me your code and ask me to debug it for you.
+
+It is unfair to other students for me to debug your code for you.
+
+It is your responsibility to debug your own code.
+
+----------
+
+Having said that, let me also say that I am more than happy to
+offer advice on how to approach debugging, how to find errors in
+your code, how to figure out what is going wrong, ...
+
+What you should do is tell me:
+
+  (1) what behavior you are observing,
+
+  (2) what is wrong with that behavior,
+
+  (3) why you think that behavior might be occuring,
+
+  (4) what you have done to find the problem yourself,
+
+  (5) and what results you are seeing from any debugging
+        statements you have already placed in your code.
+
+#----------------------------------------------------------------------
+Some observations ...
+----------
+
+(1) Some of the triangles are clearly facing the camera position,
+    while some others are clearly facing away from the camera
+    position.
+
+    The trickiest case of all is when a triangle is _just about_
+    edge-on to the camera position.  By this, I mean that the
+    angle between the to△ vector and the triangle's surface
+    normal is _almost exactly_ π/2 (90°) or π/2 (-90°).
+
+    When this occurs, even the slightest tilting of the triangle
+    in any direction will cause the triangle to flip between being
+    visible and being non-visible.
+
+(2) Double precision FP numbers in C have about 16 decimal digits
+    of precision.  When triangles are just about edge-on, even the
+    slightest variability in FP calculations can cause the flip
+    mentioned in point (1).
+
+(3) FP calculations are dependent on the exact order in which the
+    operations occur.  That is, in the abstract, a*b*c*d has the
+    same value as d*c*b*a since multiplication is commutative.
+
+    In a program, however, these two calculations could differ by
+    a significant amount, depending on the exact values of a, b,
+    c, and d.
+
+    (By "significant amount", I mean an amount that could change
+     the result of a comparison.  The absolute difference may be
+     as small as just the last bit in the FP representation.)
+
+(4) It is important that you carry out your calculations with all
+    of the precision available to you.
+
+    Therefore, ensure that in your solution ...
+
+      (a) All calculations are done using double precision.  (That
+          is, use doubles, not floats.)
+
+      (b) All values are stored using double precision.  (That is,
+          use doubles, not floats.)
+
+      (c) All calculations do not use round().
+
+    If you omit these cautions, you will lose points.
+
+#----------------------------------------------------------------------
+HelloVisible test, part 2
+----------
+
+There have been more questions about the calculations for the
+isVisible() routine.
+
+(1) You do not have to compute the exact value of the angle θ
+    between the to△ vector and the triangle's surface normal to
+    know whether the triangle is visible or not.  All you need to
+    know is whether that angle θ is greater than or equal to π/2
+    (90°) and less than 3π/2 (270°).
+
+    This determination can be made without using any operations
+    other than add, subtract, multiply, negate, and comparison.
+
+(2) The fact that the camera position has INFINITY as its z
+    coordinate when the projection is PARALLEL does not disturb
+    the calculation mentioned in point (1) at all.
+
+    If the word INFINITY disturbs you, try substituting a really
+    big number instead.  (Like say 1,000,000,000.)
+
+    The calculations will work out the same.  After you convince
+    yourself of this, you can put INFINITY back and see that the
+    calculations STILL work out the same.
+
+----------
+
+To make this clearer, I added some debugging statements to the
+reference solution of the isVisible() routine.  All these
+statements do is print out the values of some intermediate
+calculations on the way to determining whether a given triangle is
+visible from a given camera position.
+
+The one change in HelloVisible.c is due to there being some
+comment that possibly the fact that all three of the vertices had
+z = 0.0 was a "special case" that "just happened" to work and that
+the general problem (that is, z != 0.0) was different / harder /
+more obscure / ... than the "special case" of z = 0.
+
+Not so.
+
+To show this, I have changed the z coordinates of the three
+vertices to non-zero values.
+
+Here's the updated run:
+
+    $ gcc -DDEBUG -o HelloVisible HelloVisible.c visible.c
+    $ ./HelloVisible
+
+    #-------------------
+    cp (    0.00000000,    0.00000000,           inf )
+
+    #-------------------
+    vA (    1.00000000,    2.00000000,    1.00000000 )
+    vB (    3.00000000,    4.00000000,    2.00000000 )
+    vC (    5.00000000,    2.00000000,    3.00000000 )
+
+    # isVisible(
+    #   cp: (    0.00000000,    0.00000000,           inf )
+    #   v1: (    1.00000000,    2.00000000,    1.00000000 )
+    #   v2: (    3.00000000,    4.00000000,    2.00000000 )
+    #   v3: (    5.00000000,    2.00000000,    3.00000000 ) )
+    # a        : (    2.00000000,    2.00000000,    1.00000000 )
+    # b        : (    4.00000000,    0.00000000,    2.00000000 )
+    # a⨉b      : (    4.00000000,   -0.00000000,   -8.00000000 )
+    # to△      : (    1.00000000,    2.00000000,          -inf )
+    # to△ · sn :           inf
+    # isVisible() -> 0
+
+      --> This △ is NOT visible.
+
+    #-------------------
+    vA (    1.00000000,    2.00000000,    1.00000000 )
+    vC (    5.00000000,    2.00000000,    3.00000000 )
+    vB (    3.00000000,    4.00000000,    2.00000000 )
+
+    # isVisible(
+    #   cp: (    0.00000000,    0.00000000,           inf )
+    #   v1: (    1.00000000,    2.00000000,    1.00000000 )
+    #   v2: (    5.00000000,    2.00000000,    3.00000000 )
+    #   v3: (    3.00000000,    4.00000000,    2.00000000 ) )
+    # a        : (    4.00000000,    0.00000000,    2.00000000 )
+    # b        : (    2.00000000,    2.00000000,    1.00000000 )
+    # a⨉b      : (   -4.00000000,   -0.00000000,    8.00000000 )
+    # to△      : (    1.00000000,    2.00000000,          -inf )
+    # to△ · sn :          -inf
+    # isVisible() -> 1
+
+      --> This △ IS visible.
+
+    #-------------------
+    $
+
+The lines with '#' on the front followed by some information show,
+
+    (1) The parameters passed to isVisible().
+    (2) The calculated a vector.
+    (3) The calculated b vector.
+    (4) The calculated cross product of a and b.
+    (5) The calculated to△ vector.
+    (6) The calculated dot product of the to△ vector and the
+          triangle's surface normal.
+    (7) The final result that isVisible() will return.
+
+All of the calculations follow the derivation showed in the file
+"4303 Culling handout, Dalio SP20.pdf" in the
+Canvas > Modules > Handouts section.
+
+You will notice that even though in both cases to△ · sn was an
+inifinity, toVisible() is still able to compute the correct
+result (and without recourse to anything except a comparison).
+
+Again, the reference solution uses twelve (12) subtractions, nine
+(9) multiplications, two (2) additions, one (1) negation, and one
+(1) comparison.  (And I could have done it without the negation,
+but I just like the way the code looks with it.  :)
+
+You don't have to match that count exactly, but understand that
+you need no other operations than that to get the correct answer
+in all cases.  (And certainly do not need any trigonometric,
+power, or root functions.)
+
+#----------------------------------------------------------------------
